@@ -1,25 +1,120 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#edf5e9"><title>Lykien · Wanderwetter</title><link rel="icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>
+<!DOCTYPE html>
+
+<html lang="de"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/><meta content="#edf5e9" name="theme-color"/><title>Lykien · Wanderwetter</title><link href="favicon.png?v=149" rel="icon"/><link href="apple-touch-icon.png?v=149" rel="apple-touch-icon"/><link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/><style>
 :root{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;color:#1e2920;background:#edf5e9}*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#f5f9f0,#e7f1e4)}main{max-width:690px;margin:auto;padding:22px 14px 55px}.top{display:flex;align-items:center;gap:13px;margin:5px 0 20px}.brand{font-weight:850;font-size:22px;letter-spacing:-.7px}.sub{font-size:12px;color:#657767;margin-top:4px}.logo{width:66px;height:66px;border-radius:18px;object-fit:cover}.card{background:#ffffffd9;border:1px solid #dce8d7;border-radius:22px;padding:18px;margin:13px 0;box-shadow:0 8px 22px #365b3210}.eyebrow{font-size:11px;font-weight:800;letter-spacing:1.3px;color:#64835c;text-transform:uppercase}h1{font-size:23px;margin:7px 0 5px}h2{font-size:17px;margin:0 0 12px}.muted{color:#667569;font-size:13px;line-height:1.55}.days{display:flex;gap:7px;overflow-x:auto;padding:4px 0 12px;scroll-snap-type:x mandatory}.day{flex:0 0 76px;scroll-snap-align:start;background:#f8fbf6;border:1px solid #dbe7d8;border-radius:14px;padding:11px 5px;min-height:76px;color:#314733;cursor:pointer}.day b{display:block;font-size:17px;margin:3px 0}.day small{font-size:10px}.day.active{background:#507e4b;color:white;border-color:#507e4b}.route{font-weight:800;font-size:20px;margin:5px 0}.pill{display:inline-block;border-radius:50px;padding:6px 10px;background:#e4efdf;color:#41643d;font-size:11px;font-weight:700;margin:5px 4px 0 0}.mapwrap{overflow:hidden;border-radius:16px;border:1px solid #d5e3d0}#map{height:370px;width:100%;background:#dbe9d9}.mapactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}button.action,.filebutton{background:#547c4b;border:0;color:white;padding:11px 13px;border-radius:12px;font-weight:750;font-size:12px;cursor:pointer}.filebutton{display:inline-block}input[type=file]{display:none}.weather{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.metric{padding:14px;background:#f3f8f0;border-radius:14px}.metric strong{display:block;font-size:19px;margin-top:7px}.metric small{color:#657767}.warning{font-size:12px;color:#657767;line-height:1.6}.status{font-size:13px;line-height:1.6;color:#496349}.legend{font-size:11px;color:#6b796b;margin-top:9px}a{color:#38693d}#elev{width:100%;height:130px;display:none}@media(min-width:620px){#map{height:460px}.weather{grid-template-columns:repeat(4,1fr)}}
-.charts{display:grid;gap:12px;margin-top:15px}.chartbox{background:#f3f8f0;border-radius:15px;padding:12px}.chartbox h3{font-size:13px;margin:0 0 8px}.chartbox canvas{display:block;width:100%;height:130px}.routehint{background:#edf5e9;padding:10px 12px;border-radius:12px;font-size:12px;color:#476248;margin-top:10px}.statusline{font-size:12px;color:#476248;margin-top:8px}button.action.secondary{background:#dcebd7;color:#355b36} </style></head><body><main><header class="top"><img class="logo" src="JB_Logo.png" alt="B-Logo"><div><div class="brand">Lykien · Wanderwetter</div><div class="sub">Dein Lykischer Weg · 28.10.–08.11.2026</div><div class="sub" id="buildinfo">Version 1.2.0 · Aktualisiert: 26.10.2026, 21:00 Uhr</div></div></header><section class="card"><div class="eyebrow">DAV Summit Club · TULYK</div><h1>Deine Wanderreise 🌿</h1><p class="muted">Wähle einen Reisetag. Hinterlegte GPX-Wanderwege werden automatisch geladen; eigene GPX-Dateien kannst du ebenfalls ergänzen.</p><div id="days" class="days"></div><div id="route" class="route"></div><div id="date" class="muted"></div><div><span class="pill" id="kind">Wanderregion</span><span class="pill" id="trackstat">Noch kein GPX-Track</span></div></section><section class="card"><h2>🗺️ Deine detaillierte Streckenkarte</h2><div class="mapwrap"><div id="map"></div></div><div class="mapactions"><button class="action" id="terrain">Geländekarte</button><button class="action" id="standard">Straßenkarte</button><button class="action" id="fit">Ausschnitt anzeigen</button><label class="filebutton">GPX-Strecke laden<input id="gpx" type="file" accept=".gpx,application/gpx+xml,text/xml"></label></div><p class="legend">Kartengrundlage: © OpenStreetMap-Mitwirkende · Gelände: OpenTopoMap. Karten benötigen Internet. Die Ortsmarkierungen sind keine bestätigte Wanderroute.</p><div id="tracknote" class="status">Tipp: Mit einer GPX-Datei siehst du den tatsächlichen Wanderweg als grüne Linie – auch mit vielen Kurven und Wegpunkten.</div><canvas id="elev"></canvas><div class="routehint" id="gpxsources"><b>Öffentliche GPX-Quellen für diese Region:</b><div id="sourceitems"></div><p class="muted">Die Tracks sind Vergleichsrouten, nicht die bestätigte DAV-Wanderung. Lade eine passende GPX-Datei von der Quelle herunter und importiere sie oben. Keine automatische Übernahme fremder Strecken ohne Prüfung.</p></div><div class="routehint">Echte Wanderwege werden automatisch aus dem Ordner tracks geladen, sofern eine passende GPX-Datei vorhanden ist. Andernfalls siehst du Start und Ziel als Orientierung – keine erfundenen Wege.</div></section><section class="card"><h2>☀️ Wetter am ausgewählten Etappenort</h2><div class="weather"><div class="metric"><small>Temperatur</small><strong id="temp">–</strong></div><div class="metric"><small>Regenwahrscheinlichkeit</small><strong id="rain">–</strong></div><div class="metric"><small>Wind</small><strong id="wind">–</strong></div><div class="metric"><small>Sonnenaufgang / -untergang</small><strong id="sun" style="font-size:15px">–</strong></div></div><p id="weatherstatus" class="warning">Wetterdaten werden geladen …</p><div class="charts"><div class="chartbox"><h3>🌡️ Temperatur im Tagesverlauf</h3><canvas id="tempchart"></canvas></div><div class="chartbox"><h3>🌧️ Regenwahrscheinlichkeit</h3><canvas id="rainchart"></canvas></div><div class="chartbox"><h3>💨 Wind im Tagesverlauf</h3><canvas id="windchart"></canvas></div></div><p class="statusline" id="forecastnote">Die Diagramme zeigen echte Stundenwerte, sobald sie für den Reisetag verfügbar sind.</p></section><p class="warning">Version 1.2.0 · Stand 26.10.2026, 21:00 Uhr (MESZ). Die Reiseorte sind eine vorläufige Orientierung, kein verifizierter DAV-Tagesplan. Tageszuordnung und exakte Etappen bitte mit deinen Reiseunterlagen abgleichen. Bei Tagen außerhalb der verfügbaren Wettervorhersage werden keine Werte erfunden.</p></main><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
+.charts{display:grid;gap:12px;margin-top:15px}.chartbox{background:#f3f8f0;border-radius:15px;padding:12px}.chartbox h3{font-size:13px;margin:0 0 8px}.chartbox canvas{display:block;width:100%;height:130px}.routehint{background:#edf5e9;padding:10px 12px;border-radius:12px;font-size:12px;color:#476248;margin-top:10px}.statusline{font-size:12px;color:#476248;margin-top:8px}button.action.secondary{background:#dcebd7;color:#355b36} </style><style>#hotelname,#hoteladdress{display:block;width:100%;margin:9px 0;padding:13px 12px;border:1px solid #d5e3d0;border-radius:12px;background:#fbfdf9;color:#26392a;font-size:15px}#hotelstatus{margin-top:12px}.hotelpin{background:#47764d;color:white;border:2px solid white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #0003;font-size:17px}</style><style>
+/* Version 1.5.3 - kompakte iPhone-Ansicht */
+main{padding:12px 12px 28px}.top{margin:2px 0 10px;gap:10px}.logo{width:49px;height:49px;border-radius:13px}.brand{font-size:19px}.sub{font-size:10px;margin-top:2px}.card{margin:9px 0;padding:13px;border-radius:18px;box-shadow:0 4px 14px #365b320b}.eyebrow{font-size:10px;letter-spacing:1px}h1{font-size:19px;margin:4px 0 7px}h2{font-size:16px;margin:0 0 9px}.days{gap:5px;padding:2px 0 6px}.day{flex-basis:64px;min-height:61px;padding:7px 4px;border-radius:11px}.day b{font-size:16px;margin:2px 0}.day small{font-size:9px}.route{font-size:18px;margin:5px 0 2px}.pill{padding:4px 8px;margin:4px 3px 0 0;font-size:10px}#map{height:235px}.mapactions{margin-top:8px;gap:6px}button.action{padding:9px 10px;font-size:11px;border-radius:10px}.weather{gap:7px}.metric{padding:10px;border-radius:12px}.metric strong{font-size:19px;margin-top:4px}.metric small{font-size:11px}.charts{gap:8px;margin-top:9px}.chartbox{padding:10px;border-radius:12px}.chartbox canvas{height:112px}.chartbox h3{font-size:12px;margin:0 0 5px}.routehint{padding:8px 10px;margin-top:8px}.statusline,.warning{font-size:10px;line-height:1.4}.status{font-size:12px;margin:7px 0}#hotelname,#hoteladdress{padding:10px;margin:6px 0;font-size:14px}.legend{font-size:10px}.muted{font-size:12px}#weatherstatus{font-size:11px;line-height:1.4;margin:8px 0 2px}#forecastnote{margin:8px 0 0}
+@media(min-width:620px){#map{height:340px}}
+.day.hotel-a{background:#e2efe1;border-color:#b6d4b3}.day.hotel-b{background:#cce7d4;border-color:#96c6a5}.day.hotel-c{background:#c4e2d9;border-color:#8abbb0}.day.hotel-d{background:#e1eac3;border-color:#b6ca86}.day.hotel-e{background:#c8e4e1;border-color:#8cbfbb}.day.hotel-f{background:#d5e1b9;border-color:#a4bc78}.day.hotel-none{background:#f4f6f0}.day.active{outline:2px solid #315d3a;outline-offset:-2px;box-shadow:inset 0 0 0 1px #416e45;color:#193923;font-weight:800}.day small{color:inherit}.rain-summary{font-size:11px;color:#516b57;margin-top:5px}.chartbox .rain-caption{font-size:10px;color:#6b806b;margin:-2px 0 5px} #hoteladdress{white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:13px;letter-spacing:-.15px}#hotelstatus:empty{display:none}.day{transition:background-color .15s ease} .bathbadge{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:9px 13px;border-radius:12px;font-size:12px;font-weight:750;line-height:1.2;white-space:nowrap}.bath-yes{background:#d7e9f1;color:#255c72}.bath-no{background:#e4efdf;color:#41643d}.bath-neutral{background:#edf2eb;color:#617262}.mapactions{align-items:center;gap:8px}/* Kartenaktionen in einer Reihe, auch auf iPhone */
+#mapcontrols{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:6px;width:100%}
+#mapcontrols button.action{width:100%;min-width:0;padding:10px 4px;font-size:clamp(9px,2.7vw,12px);white-space:nowrap;text-align:center}
+
+#journeymap{height:330px;width:100%;background:#e6efe4}#journeymapcard .mapactions{display:flex;gap:8px;flex-wrap:wrap}#journeymapcard .mapactions button{flex:1;min-width:125px}.journeypin{width:27px;height:27px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid white;background:#547c4b;color:#fff;font-size:11px;font-weight:800;box-shadow:0 1px 5px #0005}.journeypin.end{background:#345c87}.journeypin.start{background:#355b36}.journeypin.current{background:#2678bd}</style></head><body><main><header class="top"><img alt="B-Logo" class="logo" src="JB_Logo.png?v=149"/><div><div class="brand">Lykien · Wanderwetter</div><div class="sub">Dein Lykischer Weg · 28.10.–08.11.2026</div><div class="sub" id="buildinfo">Version 1.5.3</div></div></header><section class="card"><div class="eyebrow">DAV Summit Club · TULYK</div><h1>Deine Wanderreise 🌿</h1><div class="days" id="days"></div><div class="route" id="route"></div><div class="muted" id="date"></div><div><span class="pill" id="kind">Wanderregion</span><span class="pill" id="trackstat">Ortsübersicht</span></div></section><section class="card"><h2>Karte &amp; Etappe</h2><div class="mapwrap"><div id="map"></div></div><div class="mapactions" id="mapcontrols"><button class="action" id="terrain">Geländekarte</button><button class="action" id="standard">Straßenkarte</button><button class="action" id="fit">Ausschnitt anzeigen</button></div></section><section class="card"><h2>Dein Hotel</h2><input aria-label="Hotelname" id="hotelname" placeholder="Hotelname"/><input aria-label="Hoteladresse" id="hoteladdress" placeholder="Hoteladresse oder Ort"/><div class="mapactions"><button class="action" id="hotelsave">Hotel speichern</button><button class="action secondary" id="hotelmap">Auf Karte zeigen</button></div><p class="status" id="hotelstatus">Noch keine Unterkunft eingetragen.</p></section><section class="card"><h2>☀️ Wanderwetter</h2><div class="weather"><div class="metric"><small>Temperatur</small><strong id="temp">–</strong></div><div class="metric"><small>Regen · Wahrscheinlichkeit</small><strong id="rain">–</strong><div class="rain-summary" id="rainamount">– mm (07–19 Uhr)</div></div><div class="metric"><small>Wind</small><strong id="wind">–</strong></div><div class="metric"><small>Sonnenaufgang / -untergang</small><strong id="sun" style="font-size:15px">–</strong></div></div><div class="routehint" id="weatheradvice">Wander- und Badewetter wird ausgewertet …</div><div class="mapactions"><button class="action secondary" id="refreshweather" type="button">↻ Wetter aktualisieren</button><span id="bathbadge" class="bathbadge bath-neutral" role="status" aria-live="polite">Badewetter: wird geprüft</span></div><div class="charts"><div class="chartbox"><h3>🌡️ Temperatur im Tagesverlauf</h3><canvas id="tempchart"></canvas></div><div class="chartbox"><h3>🌧️ Regenmenge · Stundenverlauf</h3><div class="rain-caption" id="raincaption">mm je Stunde · Regenwahrscheinlichkeit</div><canvas id="rainchart"></canvas></div><div class="chartbox"><h3>💨 Wind im Tagesverlauf</h3><canvas id="windchart"></canvas></div></div><p class="statusline" id="forecastnote">Die Diagramme zeigen echte Stundenwerte, sobald sie für den Reisetag verfügbar sind.</p><p class="warning" id="weatherstatus" style="font-size:10px;line-height:1.4;color:#7c8a7c;margin:7px 2px 0">Wetterdaten werden geladen …</p></section><div style="display:none"><span id="tracknote"></span><canvas id="elev"></canvas><div id="sourceitems"></div><input id="gpx" type="file"/></div><section class="card" style="text-align:center"><button class="action" id="shareday" type="button" style="width:100%;font-size:15px;padding:14px">↗ Tageswetter als Bild teilen</button><p class="muted" id="sharestatus" style="margin:8px 0 0">Etappe, Hotel und Wetterdiagramme als Bild versenden</p></section><section class="card" id="journeymapcard"><h2>Gesamte Reise · Karte</h2><div class="mapwrap"><div id="journeymap" role="region" aria-label="Übersichtskarte aller Reiseorte"></div></div><div class="mapactions"><button class="action secondary" id="myposition" type="button">⌖ Mein Standort</button><button class="action secondary" id="journeyfit" type="button">Gesamte Strecke</button></div><p class="status" id="positionstatus">Start: Antalya · Ziel: Antalya</p><p class="legend">Gestrichelte Linie = Reiseorte in zeitlicher Reihenfolge, keine GPS-Wanderroute. Transfers sind enthalten. Standort nur nach deiner Freigabe.</p></section></main><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
 const stages=[
 ['28.10.','Anreise · Antalya',36.8969,30.7133,'Anreise'],
 ['29.10.','Kayaköy → Ölüdeniz',36.575,29.105,'Wanderung',36.548,29.116],
 ['30.10.','Ovacık → Faralya',36.558,29.126,'Wanderung',36.495,29.137],
-['31.10.','Kabak-Bucht',36.461,29.124,'Wanderregion'],
-['01.11.','Alınca',36.433,29.145,'Wanderregion'],
-['02.11.','Gey',36.413,29.181,'Wanderregion'],
-['03.11.','Bel',36.401,29.195,'Wanderregion'],
-['04.11.','Kaş',36.200,29.640,'Wanderregion'],
-['05.11.','Üçağız · Simena',36.196,29.844,'Wanderregion'],
-['06.11.','Demre · Myra',36.245,29.985,'Kultur / Wanderregion'],
-['07.11.','Çıralı · Olympos',36.416,30.479,'Wanderregion'],
-['08.11.','Abreise',36.897,30.713,'Abreise']
-];let selected=1,map,markerLayer,trackLayer,activeBounds,base,weatherRequest=0;const savedTracks={};const APP_VERSION="1.3.0";const UPDATED_AT="27.10.2026, 19:00 Uhr";const tileTerrain=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,attribution:'© OpenStreetMap contributors, SRTM | OpenTopoMap'});const tileStreet=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'});map=L.map('map',{layers:[tileTerrain],scrollWheelZoom:false}).setView([36.52,29.15],11);base=tileTerrain;markerLayer=L.featureGroup().addTo(map);trackLayer=L.featureGroup().addTo(map);const $=id=>document.getElementById(id);const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function setBase(next){if(base!==next){map.removeLayer(base);base=next;next.addTo(map);next.bringToBack()}}$('terrain').onclick=()=>setBase(tileTerrain);$('standard').onclick=()=>setBase(tileStreet);$('fit').onclick=()=>{if(activeBounds)map.fitBounds(activeBounds,{padding:[30,30],maxZoom:14})};
+['31.10.','Faralya → Kabak → Faralya',36.495,29.137,'Rundwanderung',36.461,29.124],
+['01.11.','Firnaz-Bucht · Patara → Kaş',36.274,29.317,'Wanderung / Transfer',36.200,29.640],
+['02.11.','Kaş → Ufakdere · Bayındır',36.200,29.640,'Wanderung'],
+['03.11.','Apollonia → Aperlai → Üçağız',36.196,29.844,'Wanderung / Boot'],
+['04.11.','Kekova · Kaleköy / Simena',36.196,29.844,'Boot / Kultur'],
+['05.11.','Kap Gelidonia → Karaöz',36.334,30.298,'Wanderung'],
+['06.11.','Adrasan → Olympos',36.310,30.464,'Wanderung',36.396,30.473],
+['07.11.','Çıralı · Chimaira → Antalya',36.416,30.479,'Wanderung / Transfer',36.897,30.713],
+['08.11.','Abreise · Antalya',36.8969,30.7133,'Abreise']
+];let selected=1,map,markerLayer,trackLayer,hotelMarker,activeBounds,base,weatherRequest=0;const savedTracks={};const APP_VERSION="1.5.3";const UPDATED_AT="27.10.2026, 20:00 Uhr";const tileTerrain=window.L?L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,attribution:'© OpenStreetMap contributors, SRTM | OpenTopoMap'}):null;const tileStreet=window.L?L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}):null;if(window.L){map=L.map('map',{layers:[tileTerrain],scrollWheelZoom:false}).setView([36.52,29.15],11);base=tileTerrain;markerLayer=L.featureGroup().addTo(map);trackLayer=L.featureGroup().addTo(map)}else{document.getElementById('map').innerHTML='<p style="padding:20px">Karte vorübergehend nicht verfügbar. Wetter wird unabhängig geladen.</p>';} const $=id=>document.getElementById(id);const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function setBase(next){if(!map||!next)return;if(base!==next){map.removeLayer(base);base=next;next.addTo(map);next.bringToBack()}}$('terrain').onclick=()=>setBase(tileTerrain);$('standard').onclick=()=>setBase(tileStreet);$('fit').onclick=()=>{if(map&&activeBounds)map.fitBounds(activeBounds,{padding:[30,30],maxZoom:14})};
+const hotelGroupColors=['hotel-a','hotel-b','hotel-c','hotel-d','hotel-e','hotel-f'];
+function hotelGroupClass(day){const h=davHotels[day];if(!h)return 'hotel-none';let group=-1,last='';for(let i=0;i<=day;i++){const name=davHotels[i]?.name||'';if(name!==last){group++;last=name}}return hotelGroupColors[group%hotelGroupColors.length]}
 const publicRoutes={2:[['Ölüdeniz–Faralya (GPX)', 'https://wandern-essen.de/lykischer-weg-von-oeluedeniz-nach-faralya/']],3:[['Faralya–Kabak (GPX; keine Rundwanderung)', 'https://wandern-essen.de/lykischer-weg-von-faralya-nach-kabak/']]};
-function select(i){selected=i;const src=publicRoutes[i]||[];document.getElementById('sourceitems').innerHTML=(src.length?src.map(x=>'<p><a target="_blank" rel="noopener noreferrer" href="'+x[1]+'">'+x[0]+' ↗</a></p>').join(''):'<p><a target="_blank" rel="noopener noreferrer" href="https://lycianwayru.com/karte.html">Gesamte Lykischer-Weg-Karte und GPX-Sammlung ↗</a></p>');let s=stages[i];$('days').innerHTML=stages.map((x,j)=>`<button class="day ${i===j?'active':''}" data-i="${j}"><small>Tag ${j+1}</small><b>${x[0].slice(0,2)}</b><small>${x[0].slice(3)}</small></button>`).join('');document.querySelectorAll('.day').forEach(b=>b.onclick=()=>select(+b.dataset.i));$('route').textContent=s[1];$('date').textContent=s[0]+'.2026';$('kind').textContent=s[4];markerLayer.clearLayers();trackLayer.clearLayers();$('trackstat').textContent='Noch kein GPX-Track';$('tracknote').textContent='Noch kein exakter Streckenverlauf hinterlegt. Lade die GPX-Datei dieser Etappe, um den Wanderweg detailliert darzustellen.';$('elev').style.display='none';if(savedTracks[i])showTrack(savedTracks[i].data,savedTracks[i].name);let p=[s[2],s[3]];L.marker(p).bindPopup(esc(s[1])+' · Orientierungspunkt').addTo(markerLayer);if(s.length>5)L.marker([s[5],s[6]]).bindPopup('Zielort · Orientierungspunkt').addTo(markerLayer);activeBounds=markerLayer.getBounds();map.fitBounds(activeBounds,{padding:[45,45],maxZoom:12});setTimeout(()=>map.invalidateSize(),80);loadWeather(s);loadAutoTrack(i)}
+function select(i){selected=i;const src=publicRoutes[i]||[];document.getElementById('sourceitems').innerHTML=(src.length?src.map(x=>'<p><a target="_blank" rel="noopener noreferrer" href="'+x[1]+'">'+x[0]+' ↗</a></p>').join(''):'<p><a target="_blank" rel="noopener noreferrer" href="https://lycianwayru.com/karte.html">Gesamte Lykischer-Weg-Karte und GPX-Sammlung ↗</a></p>');let s=stages[i];$('days').innerHTML=stages.map((x,j)=>`<button class="day ${hotelGroupClass(j)} ${i===j?'active':''}" data-i="${j}"><small>Tag ${j+1}</small><b>${x[0].slice(0,2)}</b><small>${x[0].slice(3)}</small></button>`).join('');document.querySelectorAll('.day').forEach(b=>b.onclick=()=>select(+b.dataset.i));$('route').textContent=s[1];$('date').textContent=s[0]+'.2026';$('kind').textContent=s[4];if(markerLayer)markerLayer.clearLayers();if(trackLayer)trackLayer.clearLayers();hotelMarker=null;$('trackstat').textContent='Ortsübersicht';$('elev').style.display='none';let p=[s[2],s[3]];if(map){L.marker(p).bindPopup(esc(s[1])+' · Orientierungspunkt').addTo(markerLayer);if(s.length>5)L.marker([s[5],s[6]]).bindPopup('Zielort · Orientierungspunkt').addTo(markerLayer);activeBounds=markerLayer.getBounds();map.fitBounds(activeBounds,{padding:[45,45],maxZoom:12});setTimeout(()=>map.invalidateSize(),80);}loadWeather(s);showHotel(i)}
 function plot(id,values,labels,unit,maxFixed){const c=$(id),w=c.clientWidth||320,h=130,ratio=window.devicePixelRatio||1;c.width=w*ratio;c.height=h*ratio;let g=c.getContext('2d');g.scale(ratio,ratio);g.clearRect(0,0,w,h);if(!values.length){g.fillStyle='#768b76';g.font='12px sans-serif';g.fillText('Noch keine Prognose verfügbar',10,62);return}let lo=maxFixed===100?0:Math.floor(Math.min(...values)-2),hi=maxFixed===100?100:Math.ceil(Math.max(...values)+2);if(hi<=lo)hi=lo+1;g.strokeStyle='#d3dfd0';g.lineWidth=1;for(let i=0;i<3;i++){let y=20+i*37;g.beginPath();g.moveTo(32,y);g.lineTo(w-8,y);g.stroke()}g.fillStyle='#6b806b';g.font='10px sans-serif';g.fillText(hi+unit,2,21);g.fillText(lo+unit,2,98);g.beginPath();values.forEach((v,i)=>{let x=35+(w-45)*i/Math.max(1,values.length-1),y=94-(v-lo)/(hi-lo)*74;i?g.lineTo(x,y):g.moveTo(x,y)});g.strokeStyle=id==='rainchart'?'#6b9eb0':'#568351';g.lineWidth=2.5;g.stroke();g.fillStyle='#667d65';labels.forEach((lab,i)=>{if(i%3===0||i===labels.length-1){let x=35+(w-45)*i/Math.max(1,labels.length-1);g.fillText(lab,x-8,120)}})}
+function plotRain(amounts,probabilities,labels){
+ const c=$('rainchart'),w=c.clientWidth||320,h=112,ratio=window.devicePixelRatio||1;
+ c.width=Math.round(w*ratio);c.height=Math.round(h*ratio);const g=c.getContext('2d');g.scale(ratio,ratio);g.clearRect(0,0,w,h);
+ const nums=amounts.map(v=>typeof v==='number'&&Number.isFinite(v)?Math.max(0,v):0);
+ if(!nums.length){g.fillStyle='#768b76';g.font='12px sans-serif';g.fillText('Noch keine Prognose verfügbar',10,62);return}
+ const max=Math.max(1,Math.ceil(Math.max(...nums)*2)/2),left=30,right=w-8,top=12,bottom=88,slot=(right-left)/nums.length;
+ g.font='10px sans-serif';g.fillStyle='#6b806b';g.fillText(max.toLocaleString('de-DE')+' mm',2,14);g.fillText('0',16,bottom+3);
+ g.strokeStyle='#d5dfd3';g.beginPath();g.moveTo(left,bottom);g.lineTo(right,bottom);g.stroke();
+ nums.forEach((v,i)=>{const x=left+i*slot+slot*.12,bh=(v/max)*(bottom-top);g.fillStyle=v>0?'#718d80':'#dbe4d8';g.fillRect(x,bottom-bh,Math.max(2,slot*.76),Math.max(v>0?2:1,bh));});
+ g.beginPath();probabilities.forEach((v,i)=>{const x=left+(i+.5)*slot,y=bottom-(Math.max(0,Math.min(100,v??0))/100)*(bottom-top);i?g.lineTo(x,y):g.moveTo(x,y)});
+ g.strokeStyle='#4c7959';g.lineWidth=1.5;g.setLineDash([3,3]);g.stroke();g.setLineDash([]);
+ g.fillStyle='#667d65';labels.forEach((label,i)=>{if(i%3===0||i===labels.length-1)g.fillText(label,left+(i+.1)*slot,105)});
+}
 function clearCharts(){['tempchart','rainchart','windchart'].forEach(id=>plot(id,[],[],''))}
-async function loadWeather(s){let token=++weatherRequest;['temp','rain','wind','sun'].forEach(k=>$(k).textContent='–');clearCharts();const iso='2026-'+s[0].slice(3)+'-'+s[0].slice(0,2);$('weatherstatus').textContent='Wetterprognose wird abgerufen …';$('forecastnote').textContent='Wetterdaten: Open-Meteo · Ortszeit Türkei';try{let u=new URL('https://api.open-meteo.com/v1/forecast');Object.entries({latitude:s[2],longitude:s[3],timezone:'Europe/Istanbul',hourly:'temperature_2m,precipitation_probability,wind_speed_10m',daily:'sunrise,sunset',forecast_days:16}).forEach(([k,v])=>u.searchParams.set(k,v));let controller=new AbortController();let timeout=setTimeout(()=>controller.abort(),14000);let r;try{r=await fetch(u,{signal:controller.signal,cache:'no-store'})}finally{clearTimeout(timeout)}if(!r.ok)throw Error('HTTP '+r.status);let d=await r.json();if(token!==weatherRequest)return;let ix=(d.daily?.time||[]).indexOf(iso);if(ix<0){$('weatherstatus').textContent='Für '+s[0]+'.2026 ist noch keine Tagesprognose verfügbar. Open-Meteo bietet höchstens 16 Tage im Voraus. Bitte später erneut öffnen.';return}let vals=(d.hourly?.time||[]).map((t,j)=>({t,j})).filter(v=>v.t.startsWith(iso)&&Number(v.t.slice(11,13))>=7&&Number(v.t.slice(11,13))<=19);if(!vals.length)throw Error('Keine Stundenwerte verfügbar');let arr=k=>vals.map(v=>d.hourly[k]?.[v.j]).map(v=>typeof v==='number'?v:0);let temps=arr('temperature_2m'),rains=arr('precipitation_probability'),winds=arr('wind_speed_10m'),labels=vals.map(v=>v.t.slice(11,13)+'h');let daytime=vals.filter(v=>Number(v.t.slice(11,13))>=9&&Number(v.t.slice(11,13))<=16);let avg=k=>daytime.reduce((a,v)=>a+(d.hourly[k]?.[v.j]??0),0)/Math.max(1,daytime.length);$('temp').textContent=Math.round(avg('temperature_2m'))+' °C';$('rain').textContent=Math.round(Math.max(...rains))+' %';$('wind').textContent=Math.round(avg('wind_speed_10m'))+' km/h';$('sun').textContent=d.daily.sunrise[ix].slice(11)+' / '+d.daily.sunset[ix].slice(11);plot('tempchart',temps,labels,'°');plot('rainchart',rains,labels,'%',100);plot('windchart',winds,labels,'');$('weatherstatus').textContent='Vorhersage am Orientierungspunkt · Abruf: '+new Date().toLocaleString('de-DE',{timeZone:'Europe/Istanbul',dateStyle:'short',timeStyle:'short'})+' Uhr (Türkei) · Durchschnitt 09–16 Uhr · Regen: höchster Stundenwert (07–19 Uhr).';}catch(e){if(token!==weatherRequest)return;$('weatherstatus').textContent='Wetterabruf fehlgeschlagen ('+(e.name==='AbortError'?'Zeitüberschreitung':e.message)+'). Bitte Internetverbindung prüfen und Seite erneut öffnen.'}}
+async function loadWeather(s){
+ const token=++weatherRequest;
+ ['temp','rain','wind','sun'].forEach(k=>$(k).textContent='–');$('rainamount').textContent='– mm (07–19 Uhr)';$('raincaption').textContent='mm je Stunde · Regenwahrscheinlichkeit';clearCharts();
+ const iso='2026-'+s[0].slice(3)+'-'+s[0].slice(0,2);
+ $('weatherstatus').textContent='Wetterdaten werden geladen …';
+ $('weatheradvice').textContent='Wanderwetter wird ausgewertet …';$('bathbadge').textContent='Badewetter: wird geprüft';$('bathbadge').className='bathbadge bath-neutral';
+ $('forecastnote').textContent='Wetterdaten: Open-Meteo · Ortszeit Türkei';
+ try{
+  let data=null,errors=[];
+  for(const days of [16,14,7,3]){
+   const u=new URL('https://api.open-meteo.com/v1/forecast');
+   Object.entries({latitude:s[2],longitude:s[3],timezone:'Europe/Istanbul',hourly:'temperature_2m,precipitation_probability,precipitation,wind_speed_10m',daily:'sunrise,sunset',forecast_days:days}).forEach(([k,v])=>u.searchParams.set(k,v));
+   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),11000);
+   try{
+    const r=await fetch(u.toString(),{signal:controller.signal,cache:'no-store'});
+    const payload=await r.json();
+    if(!r.ok||payload.error)throw Error('HTTP '+r.status+(payload.reason?' · '+payload.reason:''));
+    if(!payload.hourly?.time?.length||!payload.daily?.time?.length)throw Error('Keine Prognosedaten erhalten');
+    data=payload;break;
+   }catch(e){errors.push(e.name==='AbortError'?'Zeitüberschreitung':e.message)}
+   finally{clearTimeout(timer)}
+   if(token!==weatherRequest)return;
+  }
+  if(!data)throw Error(errors.join(' / '));
+  if(token!==weatherRequest)return;
+  const available=data.daily.time||[];
+  let ix=available.indexOf(iso),displayDate=iso,substitute=false;
+  if(ix<0){
+   const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+   displayDate=available.includes(today)?today:available[0];
+   ix=available.indexOf(displayDate);substitute=true;
+  }
+  const vals=(data.hourly.time||[]).map((t,j)=>({t,j})).filter(v=>v.t.startsWith(displayDate)&&+v.t.slice(11,13)>=7&&+v.t.slice(11,13)<=19);
+  if(!vals.length)throw Error('Keine Stundenwerte für '+displayDate);
+  const arr=k=>vals.map(v=>{const n=data.hourly[k]?.[v.j];return typeof n==='number'&&Number.isFinite(n)?n:null});
+  const temps=arr('temperature_2m'),rains=arr('precipitation_probability'),amounts=arr('precipitation'),winds=arr('wind_speed_10m'),labels=vals.map(v=>v.t.slice(11,13)+'h');
+  const valid=a=>a.filter(v=>v!==null),mean=a=>{let v=valid(a);return v.length?v.reduce((x,y)=>x+y,0)/v.length:null};
+  const daytime=vals.map((v,i)=>({v,i})).filter(x=>+x.v.t.slice(11,13)>=9&&+x.v.t.slice(11,13)<=16).map(x=>x.i);
+  const daytimeMean=a=>mean(daytime.map(i=>a[i]));
+  const tavg=daytimeMean(temps),rmax=valid(rains).length?Math.max(...valid(rains)):null,wavg=daytimeMean(winds);
+  $('temp').textContent=tavg===null?'–':Math.round(tavg)+' °C';
+  $('rain').textContent=rmax===null?'–':Math.round(rmax)+' %';const rainTotal=valid(amounts).reduce((a,b)=>a+b,0);$('rainamount').textContent=valid(amounts).length?rainTotal.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})+' mm (07–19 Uhr)':'– mm (07–19 Uhr)';
+  $('wind').textContent=wavg===null?'–':Math.round(wavg)+' km/h';
+  $('sun').textContent=(data.daily.sunrise?.[ix]?.slice(11)||'–')+' / '+(data.daily.sunset?.[ix]?.slice(11)||'–');
+  const desc=[];
+  if(rmax!==null)desc.push(rmax>=65?'Erhöhtes Regenrisiko: Regenschutz einplanen.':rmax>=30?'Zeitweise Regen möglich: Regenjacke mitnehmen.':'Geringes Regenrisiko.');
+  if(tavg!==null)desc.push(tavg>=27?'Warm: ausreichend Wasser und Sonnenschutz mitnehmen.':tavg<=12?'Kühl: zusätzliche Schicht einpacken.':'Temperaturen voraussichtlich angenehm zum Wandern.');
+  if(wavg!==null&&wavg>=25)desc.push('Teilweise kräftiger Wind.');
+  // Badewetter nur als Orientierung nach Lufttemperatur, Regen und Wind; keine Wassertemperatur vorhanden.
+  const coastal=/Antalya|Ölüdeniz|Faralya|Kabak|Kaş|Üçağız|Simena|Adrasan|Çıralı|Olympos/i.test(s[1]);
+  const bath=$('bathbadge');
+  if(coastal&&tavg!==null&&rmax!==null&&wavg!==null){
+   const suitable=tavg>=24&&rmax<35&&wavg<20;
+   const possible=tavg>=20&&rmax<60&&wavg<28;
+   bath.textContent=suitable?'≈ Badewetter':possible?'≈ Baden eventuell':'Kein Badewetter';
+   bath.className='bathbadge '+(suitable?'bath-yes':possible?'bath-yes':'bath-no');
+  }else{
+   bath.textContent=coastal?'Badewetter: keine Daten':'Kein Badeort';
+   bath.className='bathbadge bath-neutral';
+  }
+  $('weatheradvice').textContent=desc.join(' ')||'Wetterwerte für den Ort geladen.';
+  const safe=a=>a.map(v=>v===null?0:v);
+  plot('tempchart',safe(temps),labels,'°');plotRain(amounts,rains,labels);plot('windchart',safe(winds),labels,'');
+  const pretty=d=>d.slice(8,10)+'.'+d.slice(5,7)+'.'+d.slice(0,4);
+  $('weatherstatus').textContent=substitute?'Hinweis: Wetter vom '+pretty(displayDate)+' (nicht vom gewählten Reisetag '+pretty(iso)+').':'Prognose '+pretty(displayDate)+' · Ortszeit Türkei · 09–16 Uhr.';
+  $('forecastnote').textContent=substitute?'Diagramme: '+pretty(displayDate)+' · Lufttemperatur, nicht Wassertemperatur.':'07–19 Uhr · Open-Meteo · Badetipp ohne Wassertemperatur.';
+ }catch(e){if(token!==weatherRequest)return;
+  $('weatheradvice').textContent='Wetterdaten konnten nicht geladen werden.';$('bathbadge').textContent='Badewetter: keine Daten';$('bathbadge').className='bathbadge bath-neutral';
+  $('weatherstatus').textContent='Wetterdienst nicht erreichbar: '+e.message+' · Bitte später erneut versuchen.';
+ }
+}
 function showTrack(data,name){trackLayer.clearLayers();let line=L.polyline(data.map(p=>[p.lat,p.lon]),{color:'#277b37',weight:5,opacity:.95}).addTo(trackLayer);activeBounds=line.getBounds();map.fitBounds(activeBounds,{padding:[28,28]});let distance=0,up=0,down=0;for(let j=1;j<data.length;j++){let a=data[j-1],b=data[j],rad=Math.PI/180,dl=(b.lon-a.lon)*rad,dp=(b.lat-a.lat)*rad,h=Math.sin(dp/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dl/2)**2;distance+=6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));if(a.ele!==null&&b.ele!==null){let delta=b.ele-a.ele;if(delta>0)up+=delta;else down-=delta}}$('trackstat').textContent=distance.toFixed(1)+' km GPX';$('tracknote').textContent=(selected===2?'ÖFFENTLICHER TRACK – nicht vom DAV bestätigt. ':selected===3?'NUR REFERENZ IM GEBIET KABAK – nicht eure Rundwanderung! ':'')+name+' · '+data.length+' Punkte · '+distance.toFixed(1)+' km · ↑ '+Math.round(up)+' m · ↓ '+Math.round(down)+' m. Track bleibt beim Wechsel zwischen Tagen in dieser Sitzung erhalten.';drawElevation(data)}
 
 async function loadAutoTrack(i){
@@ -44,5 +139,106 @@ function parseGpx(content){
 }
 $('gpx').addEventListener('change',async e=>{let f=e.target.files[0];if(!f)return;try{let data=parseGpx(await f.text());savedTracks[selected]={data,name:f.name};showTrack(data,f.name);e.target.value=''}catch(err){$('tracknote').textContent='GPX konnte nicht geladen werden: '+err.message}});
 function drawElevation(data){let a=data.filter(p=>p.ele!==null&&Number.isFinite(p.ele));if(a.length<2)return;let c=$('elev');c.style.display='block';let width=c.clientWidth||350,height=130,ratio=window.devicePixelRatio||1;c.width=width*ratio;c.height=height*ratio;let ctx=c.getContext('2d');ctx.scale(ratio,ratio);let mn=Math.min(...a.map(p=>p.ele)),mx=Math.max(...a.map(p=>p.ele));ctx.clearRect(0,0,width,height);ctx.fillStyle='#4e7550';ctx.font='12px sans-serif';ctx.fillText('Höhenprofil · '+Math.round(mn)+'–'+Math.round(mx)+' m',8,16);ctx.beginPath();a.forEach((p,i)=>{let x=8+(width-16)*i/(a.length-1),y=height-10-(p.ele-mn)/Math.max(1,mx-mn)*(height-38);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle='#447d40';ctx.lineWidth=2.5;ctx.stroke()}
+const hotelKey='lykien-hotels-v140';
+// Veröffentlichtes DAV-Summit-Club-Reiseprogramm TULYK: Übernachtung nach jeweiligem Reisetag.
+const davHotels=[
+{name:'Cender Hotel',address:'Antalya, Türkei'},
+{name:'Kidrak Motel',address:'Faralya, Fethiye, Türkei'},
+{name:'Kidrak Motel',address:'Faralya, Fethiye, Türkei'},
+{name:'Kidrak Motel',address:'Faralya, Fethiye, Türkei'},
+{name:'Hotel Aquaprincess',address:'Kaş, Antalya, Türkei'},
+{name:'Hotel Aquaprincess',address:'Kaş, Antalya, Türkei'},
+{name:'Ekin Pansiyon',address:'Üçağız, Demre, Türkei'},
+{name:'Ekin Pansiyon',address:'Üçağız, Demre, Türkei'},
+{name:'Changa Hotel',address:'Adrasan, Kumluca, Türkei'},
+{name:'Changa Hotel',address:'Adrasan, Kumluca, Türkei'},
+{name:'Aspen Hotel',address:'Antalya, Türkei'},
+null
+];
+function allHotels(){try{return JSON.parse(localStorage.getItem(hotelKey)||'{}')}catch(e){return {}}}
+function showHotel(i){let h=allHotels()[i]||davHotels[i]||{};$('hotelname').value=h.name||'';$('hoteladdress').value=h.address||'';$('hotelstatus').textContent=h.name?'':'Keine Unterkunft hinterlegt.';if(h.lat&&h.lon){addHotelMarker(h)}}
+function addHotelMarker(h){if(!map)return;if(hotelMarker)markerLayer.removeLayer(hotelMarker);hotelMarker=L.marker([h.lat,h.lon],{icon:L.divIcon({html:'<div class="hotelpin">🛏</div>',className:'',iconSize:[32,32],iconAnchor:[16,16]})}).bindPopup('Unterkunft: '+esc(h.name||'Hotel')+(h.address?'<br>'+esc(h.address):'')).addTo(markerLayer);activeBounds=markerLayer.getBounds();map.fitBounds(activeBounds,{padding:[35,35],maxZoom:13})}
+$('hotelsave').onclick=()=>{let hotels=allHotels();hotels[selected]={name:$('hotelname').value.trim(),address:$('hoteladdress').value.trim()};localStorage.setItem(hotelKey,JSON.stringify(hotels));$('hotelstatus').textContent='Unterkunft für diesen Tag gespeichert.'};
+$('hotelmap').onclick=async()=>{let name=$('hotelname').value.trim(),address=$('hoteladdress').value.trim();if(!name&&!address){$('hotelstatus').textContent='Bitte zuerst Hotelname oder Adresse eintragen.';return}let day=selected;let q=[name,address,'Turkey'].filter(Boolean).join(', ');$('hotelstatus').textContent='Hotelstandort wird gesucht …';try{let r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=3&q='+encodeURIComponent(q),{headers:{'Accept':'application/json'}});if(!r.ok)throw Error('Suche nicht verfügbar');let data=await r.json();if(day!==selected)return;if(!data.length){$('hotelstatus').innerHTML='Hotel nicht eindeutig gefunden. <a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q)+'">In Karten suchen</a>';return}let h={name,address,lat:Number(data[0].lat),lon:Number(data[0].lon)};let hotels=allHotels();hotels[day]=h;localStorage.setItem(hotelKey,JSON.stringify(hotels));addHotelMarker(h);$('hotelstatus').textContent='Hotel auf der Karte markiert. Bitte prüfen, ob der Standort stimmt.'}catch(e){$('hotelstatus').textContent='Standortsuche fehlgeschlagen. Hotelname und Adresse können trotzdem gespeichert werden.'}};
+
+$('refreshweather').onclick=()=>loadWeather(stages[selected]);
+
+// Hochaufloesende, eigenstaendige Tagesgrafik; keine externen Bibliotheken notwendig.
+async function shareDayImage(){
+ const status=$('sharestatus'),btn=$('shareday');btn.disabled=true;status.textContent='Bild wird erstellt …';
+ try{
+  const W=1080,H=1880,cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const g=cv.getContext('2d');g.fillStyle='#eef5e9';g.fillRect(0,0,W,H);
+  const rounded=(x,y,w,h,r,color)=>{g.fillStyle=color;g.beginPath();g.roundRect(x,y,w,h,r);g.fill()};
+  const txt=(v,x,y,size=35,color='#203428',weight='500')=>{g.fillStyle=color;g.font=weight+' '+size+'px -apple-system,Arial,sans-serif';g.fillText(String(v),x,y)};
+  const wrap=(v,x,y,width,lineHeight,size=31,color='#49634c')=>{g.font='500 '+size+'px -apple-system,Arial,sans-serif';let line='',yy=y;for(const word of String(v).split(/\s+/)){let trial=line?line+' '+word:word;if(g.measureText(trial).width>width&&line){txt(line,x,yy,size,color);yy+=lineHeight;line=word}else line=trial}if(line)txt(line,x,yy,size,color);return yy};
+  rounded(34,36,1012,1808,40,'#ffffff');
+  txt('LYKIEN · WANDERWETTER',78,118,32,'#64835c','700');
+  txt($('date').textContent,78,181,43,'#203428','700');
+  let y=246;y=wrap($('route').textContent,78,y,920,58,48,'#203428')+46;
+  rounded(72,y,936,142,24,'#eef5e9');
+  txt('HOTEL',96,y+46,25,'#64835c','700');
+  txt($('hotelname').value||'Keine Unterkunft hinterlegt',96,y+99,37,'#203428','600');y+=176;
+  const metrics=[['TEMPERATUR',$('temp').textContent],['REGENRISIKO',$('rain').textContent],['REGENMENGE',$('rainamount').textContent],['WIND',$('wind').textContent]];
+  for(let i=0;i<4;i++){let x=72+(i%2)*477,yy=y+Math.floor(i/2)*134;rounded(x,yy,459,118,22,'#f3f8f0');txt(metrics[i][0],x+22,yy+37,23,'#6b806b','600');txt(metrics[i][1],x+22,yy+87,34,'#203428','700')}
+  y+=286;txt('SA / SU   '+$('sun').textContent,82,y+20,29,'#476248','600');y+=65;
+  y=wrap($('weatheradvice').textContent,82,y,920,39,28)+56;
+  const bath=$('bathbadge').textContent;rounded(72,y-35,936,73,19,bath.includes('≈')?'#d9ebf3':'#e4efdf');txt(bath,96,y+11,30,'#355b36','700');y+=77;
+  const chartIds=['tempchart','rainchart','windchart'];const titles=['Temperatur im Tagesverlauf','Regenmenge und Regenrisiko','Wind im Tagesverlauf'];
+  for(let i=0;i<3;i++){
+   if(y+250>1790)break;
+   rounded(72,y,936,244,20,'#f3f8f0');txt(titles[i],96,y+46,28,'#203428','700');
+   const chart=$(chartIds[i]);if(chart.width&&chart.height){try{g.drawImage(chart,100,y+58,870,164)}catch(e){}}
+   y+=262;
+  }
+  txt('Wetterdaten: Open-Meteo · '+$('forecastnote').textContent.slice(0,68),78,1803,21,'#6b806b');
+  const blob=await new Promise(resolve=>cv.toBlob(resolve,'image/png'));if(!blob)throw Error('Bild konnte nicht erstellt werden');
+  const file=new File([blob],'Lykien-Tageswetter-'+$('date').textContent.replace(/[^0-9]/g,'-')+'.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share){
+   try{await navigator.share({files:[file],title:'Lykien · Wanderwetter'});status.textContent='Teilen-Menü geöffnet.';return}catch(e){if(e.name==='AbortError'){status.textContent='Teilen abgebrochen.';return}}
+  }
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);status.textContent='Bild gespeichert – du kannst es jetzt versenden.';
+ }catch(e){status.textContent='Teilen nicht möglich: '+e.message}finally{btn.disabled=false}
+}
+$('shareday').onclick=shareDayImage;
+
 select(1);
+
+// Gesamtuebersicht: Reiseorte als Orientierung, nicht als GPX-Track.
+let journeyMap=null,journeyBounds=null,journeyPositionMarker=null;
+function journeyIcon(text,cls=''){
+ return L.divIcon({className:'',html:'<div class="journeypin '+cls+'">'+text+'</div>',iconSize:[27,27],iconAnchor:[13,13]});
+}
+function initJourneyMap(){
+ const target=$('journeymap');
+ if(!window.L){target.textContent='Karte derzeit nicht verfügbar.';return;}
+ try{
+ journeyMap=L.map('journeymap',{scrollWheelZoom:false,zoomControl:true});
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap-Mitwirkende'}).addTo(journeyMap);
+ const coords=stages.map(x=>[x[2],x[3]]);
+ const route=L.polyline(coords,{color:'#527e58',weight:3,opacity:.85,dashArray:'5 9'}).addTo(journeyMap);
+ stages.forEach((st,i)=>{
+  const label=i===0?'Von':i===stages.length-1?'Bis':String(i+1);
+  const cls=i===0?'start':i===stages.length-1?'end':'';
+  L.marker([st[2],st[3]],{icon:journeyIcon(label,cls)}).addTo(journeyMap).bindPopup(esc(st[0]+' · '+st[1]));
+ });
+ journeyBounds=route.getBounds();journeyMap.fitBounds(journeyBounds,{padding:[22,22]});
+ setTimeout(()=>journeyMap.invalidateSize(),150);
+ }catch(e){target.textContent='Karte konnte nicht geladen werden.';}
+}
+$('journeyfit').onclick=()=>{if(journeyMap&&journeyBounds)journeyMap.fitBounds(journeyBounds,{padding:[22,22]})};
+$('myposition').onclick=()=>{
+ const status=$('positionstatus');
+ if(!navigator.geolocation){status.textContent='Standort auf diesem Gerät nicht verfügbar.';return;}
+ status.textContent='Standort wird angefragt …';
+ navigator.geolocation.getCurrentPosition(pos=>{
+  const lat=pos.coords.latitude,lon=pos.coords.longitude;
+  if(!journeyMap){status.textContent='Standort ermittelt, Karte nicht verfügbar.';return;}
+  if(journeyPositionMarker)journeyMap.removeLayer(journeyPositionMarker);
+  journeyPositionMarker=L.marker([lat,lon],{icon:journeyIcon('●','current')}).addTo(journeyMap).bindPopup('Mein aktueller Standort');
+  journeyMap.setView([lat,lon],12);
+  status.textContent='Blauer Punkt: dein aktueller Standort · Genauigkeit ca. '+Math.round(pos.coords.accuracy)+' m';
+ },err=>{status.textContent=err.code===1?'Standortfreigabe nicht erteilt.':'Standort konnte nicht ermittelt werden.'},{enableHighAccuracy:true,timeout:15000,maximumAge:60000});
+};
+initJourneyMap();
 </script></body></html>
